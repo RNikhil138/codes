@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Unique Calculator</title>
+<style>
+  body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background: #1e1e2f;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
+  .calculator {
+    background: #2e2e4d;
+    border-radius: 15px;
+    box-shadow: 0 0 20px #4a4a7a;
+    padding: 20px;
+    width: 320px;
+  }
+  .display {
+    background: #111133;
+    color: #fff;
+    font-size: 2rem;
+    border-radius: 10px;
+    padding: 15px;
+    text-align: right;
+    overflow-x: auto;
+    margin-bottom: 20px;
+    user-select: none;
+  }
+  .buttons {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-gap: 12px;
+  }
+  button {
+    font-size: 1.3rem;
+    border: none;
+    border-radius: 10px;
+    padding: 20px;
+    background: #4a4a7a;
+    color: white;
+    cursor: pointer;
+    transition: background 0.3s ease;
+    user-select: none;
+  }
+  button.operator {
+    background: #ff9500;
+  }
+  button.zero {
+    grid-column: span 2;
+  }
+  button:active {
+    background: #2e2e4d;
+  }
+</style>
+</head>
+<body>
+
+<div class="calculator">
+  <div id="display" class="display">0</div>
+  <div class="buttons">
+    <button id="clear">C</button>
+    <button id="backspace">←</button>
+    <button class="operator">%</button>
+    <button class="operator">/</button>
+
+    <button>7</button>
+    <button>8</button>
+    <button>9</button>
+    <button class="operator">*</button>
+
+    <button>4</button>
+    <button>5</button>
+    <button>6</button>
+    <button class="operator">-</button>
+
+    <button>1</button>
+    <button>2</button>
+    <button>3</button>
+    <button class="operator">+</button>
+
+    <button class="zero">0</button>
+    <button>.</button>
+    <button id="equals" class="operator">=</button>
+  </div>
+</div>
+
+<script>
+  const display = document.getElementById('display');
+  const buttons = document.querySelectorAll('button');
+  
+  let currentInput = '0';
+  
+  function updateDisplay() {
+    display.textContent = currentInput;
+  }
+  
+  function isOperator(char) {
+    return ['+', '-', '*', '/', '%'].includes(char);
+  }
+  
+  buttons.forEach(button => {
+    button.addEventListener('click', () => {
+      const btnValue = button.textContent;
+      
+      if (button.id === 'clear') {
+        currentInput = '0';
+      } else if (button.id === 'backspace') {
+        if (currentInput.length > 1) {
+          currentInput = currentInput.slice(0, -1);
+        } else {
+          currentInput = '0';
+        }
+      } else if (button.id === 'equals') {
+        try {
+          // Evaluate expression safely:
+          // Replace % with /100 for modulo functionality
+          let expression = currentInput.replace(/%/g, '/100');
+          let result = Function('"use strict";return (' + expression + ')')();
+          currentInput = String(result);
+        } catch {
+          currentInput = 'Error';
+        }
+      } else if (isOperator(btnValue)) {
+        // Avoid two operators in a row
+        if (currentInput === '0' && btnValue !== '-') {
+          // Don't allow operator at start except minus
+          return;
+        }
+        if (isOperator(currentInput.slice(-1))) {
+          currentInput = currentInput.slice(0, -1) + btnValue;
+        } else {
+          currentInput += btnValue;
+        }
+      } else if (btnValue === '.') {
+        // Prevent multiple decimals in current number
+        let parts = currentInput.split(/[\+\-\*\/\%]/);
+        let lastPart = parts[parts.length - 1];
+        if (!lastPart.includes('.')) {
+          currentInput += '.';
+        }
+      } else {
+        // Number pressed
+        if (currentInput === '0') {
+          currentInput = btnValue;
+        } else {
+          currentInput += btnValue;
+        }
+      }
+      
+      updateDisplay();
+    });
+  });
+
+  updateDisplay();
+</script>
+
+</body>
+</html>
